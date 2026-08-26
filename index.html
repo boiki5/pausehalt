@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PauseHalt</title>
+
+<!--
+  ============================================================================
+  PAUSEHALT  —  pausehalt.com
+  Companion app to the eBook "Is Your Family Hurting You?"
+
+  BEFORE YOU PUBLISH: search this file for "[" and fill in every placeholder.
+  They appear in the Terms and Privacy screens near the bottom of the HTML:
+     [YOUR BUSINESS OR PERSONAL NAME]   [YOUR ADDRESS]      [DATE]
+     [YEAR]                             [CURRENCY]          [NUMBER]
+     [PAYMENT PROCESSOR]                [EMAIL PROVIDER]    [HOSTING PLATFORM]
+     [ANALYTICS TOOL]
+  The support email is set to hello@pausehalt.com — change it if that's not yours.
+  ============================================================================
+-->
+
+<meta name="theme-color" content="#FBF6EE">
+<meta name="description" content="Pause, name what you feel, and choose your response. Companion to 'Is Your Family Hurting You?'">
+
+<!-- Makes the app behave like an app when added to a phone home screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PauseHalt">
+
+<!-- PWA: makes the app installable with a real icon and install prompt -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<style>
+/* ==========================================================================
+   1. DESIGN TOKENS — change a colour here and it changes everywhere
+   ========================================================================== */
+:root{
+  --cream:      #FBF6EE;   /* page background - warm beige */
+  --sand:       #F3EADC;   /* cards and input backgrounds */
+  --sand-line:  #E4D6C3;   /* hairline borders */
+  --clay:       #B4674A;   /* primary buttons - terracotta */
+  --clay-soft:  #C67C4E;   /* lighter terracotta, used for accents */
+  --sage:       #7C8B68;   /* secondary / calm actions */
+  --sage-soft:  #A3B18A;   /* breathing circle */
+  --ink:        #2C2C2C;   /* main text */
+  --muted:      #6E6459;   /* supporting text */
+
+  --radius:     18px;
+  --radius-pill:999px;
+  --tap:        52px;      /* minimum touch target height */
+  --wrap:       460px;     /* max content width */
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================================================
+   2. BASE
+   ========================================================================== */
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+
+body{
+  font-family:var(--font);
+  background:var(--cream);
+  color:var(--ink);
+  font-size:17px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+  overflow-x:hidden;
+}
+
+.app{
+  max-width:var(--wrap);
+  margin:0 auto;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  padding:
+    calc(20px + env(safe-area-inset-top))
+    22px
+    calc(28px + env(safe-area-inset-bottom));
+}
+
+h1,h2,h3,h4,p{ margin:0; }
+
+/* ==========================================================================
+   3. TYPE SCALE
+   ========================================================================== */
+.wordmark{
+  font-size:40px;
+  font-weight:300;
+  letter-spacing:-1px;
+  line-height:1.1;
+}
+.wordmark strong{ font-weight:700; letter-spacing:-0.5px; }
+
+.tagline{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:15px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+}
+
+.step-word{
+  font-size:34px;
+  font-weight:700;
+  letter-spacing:4px;
+  text-transform:uppercase;
+}
+
+.lead{ font-size:19px; color:var(--ink); }
+.sub { font-size:16px; color:var(--muted); }
+.tiny{ font-size:13px; color:var(--muted); }
+
+.screen-title{ font-size:26px; font-weight:700; letter-spacing:-0.2px; }
+
+/* ==========================================================================
+   4. SCREENS — only one carries .is-active at a time
+   ========================================================================== */
+.screen{ display:none; flex:1; flex-direction:column; }
+.screen.is-active{ display:flex; animation:rise .35s ease both; }
+
+@keyframes rise{
+  from{ opacity:0; transform:translateY(8px); }
+  to  { opacity:1; transform:none; }
+}
+
+.center{ flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:18px; }
+.stack{ display:flex; flex-direction:column; gap:12px; }
+.grow { flex:1; }
+
+/* ==========================================================================
+   5. BUTTONS
+   ========================================================================== */
+button{ font-family:inherit; font-size:17px; cursor:pointer; }
+
+.btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  min-height:var(--tap);
+  padding:15px 22px;
+  border:none;
+  border-radius:var(--radius-pill);
+  background:var(--clay);
+  color:#fff;
+  font-weight:600;
+  letter-spacing:.2px;
+  transition:transform .15s ease, background .15s ease;
+}
+.btn:active{ transform:scale(.98); }
+
+.btn--sage   { background:var(--sage); }
+.btn--quiet  { background:transparent; color:var(--muted); border:1.5px solid var(--sand-line); font-weight:500; }
+
+.link{
+  background:none; border:none; padding:10px 4px;
+  color:var(--muted); font-size:15px; text-decoration:underline;
+  text-underline-offset:3px;
+}
+.link:hover{ color:var(--ink); }
+
+:focus-visible{ outline:2.5px solid var(--clay-soft); outline-offset:3px; border-radius:6px; }
+
+/* ==========================================================================
+   6. HOME + FOOTER
+   ========================================================================== */
+.home-top{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:10px 0 34px; }
+.home-actions{ display:flex; flex-direction:column; gap:12px; }
+
+.foot{ margin-top:28px; padding-top:18px; border-top:1px solid var(--sand-line); }
+
+.foot-links{
+  display:flex; align-items:center; justify-content:center;
+  flex-wrap:wrap; gap:2px;
+}
+.foot-links .link{ font-size:13.5px; padding:8px 8px; }
+.foot-sep{ color:var(--sand-line); font-size:13px; }
+
+.foot-note{ text-align:center; margin-top:6px; }
+
+/* ==========================================================================
+   7. STEP RIBBON — the five words of the flow
+   ========================================================================== */
+.ribbon{ display:flex; justify-content:center; gap:6px; padding:4px 0 22px; flex-wrap:wrap; }
+.ribbon span{
+  font-size:10px; letter-spacing:1.4px; text-transform:uppercase;
+  color:var(--muted); opacity:.45;
+  padding:5px 9px; border-radius:var(--radius-pill);
+  transition:all .3s ease;
+}
+.ribbon span.done{ opacity:.7; }
+.ribbon span.now{ opacity:1; color:#fff; background:var(--clay); font-weight:600; }
+
+/* ==========================================================================
+   8. BREATHING CIRCLE — the heart of the app
+   ========================================================================== */
+.breath-stage{
+  width:230px; height:230px;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+.breath-stage::before{
+  content:""; position:absolute; inset:0;
+  border-radius:50%; border:1.5px solid var(--sand-line);
+}
+
+#breathRing{
+  width:132px; height:132px;
+  border-radius:50%;
+  background:var(--sage-soft);
+  display:flex; align-items:center; justify-content:center;
+  transform:scale(.72);
+  transition:transform 4s cubic-bezier(.4,0,.4,1);
+  box-shadow:0 0 0 14px rgba(163,177,138,.18);
+}
+#breathPhase{ color:#fff; font-size:15px; font-weight:600; letter-spacing:3px; text-transform:uppercase; }
+.breath-count{ font-size:13px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; }
+
+@media (prefers-reduced-motion: reduce){
+  #breathRing{ transition:none !important; transform:scale(1) !important; }
+  .screen.is-active{ animation:none; }
+  .btn:active{ transform:none; }
+}
+
+/* ==========================================================================
+   9. FORM FIELDS
+   ========================================================================== */
+label{ display:block; font-size:15px; font-weight:600; margin-bottom:7px; }
+
+input[type=text], select, textarea{
+  width:100%;
+  min-height:var(--tap);
+  padding:14px 16px;
+  font-family:inherit;
+  font-size:16px;              /* 16px stops iOS zooming in on focus */
+  color:var(--ink);
+  background:var(--sand);
+  border:1.5px solid var(--sand-line);
+  border-radius:14px;
+  -webkit-appearance:none; appearance:none;
+}
+textarea{ resize:vertical; line-height:1.5; }
+input::placeholder, textarea::placeholder{ color:#A79A8B; }
+input:focus, select:focus, textarea:focus{ border-color:var(--clay-soft); outline:none; }
+
+select{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' fill='none' stroke='%236E6459' stroke-width='2' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat; background-position:right 18px center; padding-right:44px;
+}
+
+.field{ margin-bottom:18px; }
+
+.choices{ display:flex; gap:10px; width:100%; }
+.choice{
+  flex:1; min-height:var(--tap); padding:14px 8px;
+  background:var(--sand); border:1.5px solid var(--sand-line); border-radius:14px;
+  color:var(--ink); font-weight:600; font-size:15px;
+  transition:all .15s ease;
+}
+.choice[aria-pressed="true"]{ background:var(--sage); border-color:var(--sage); color:#fff; }
+
+/* ==========================================================================
+   10. CARDS, LOG LIST, SCRIPTS
+   ========================================================================== */
+.card{
+  background:var(--sand);
+  border:1.5px solid var(--sand-line);
+  border-radius:var(--radius);
+  padding:16px 18px;
+}
+
+.entry{ margin-bottom:12px; }
+.entry-date{ font-size:12px; letter-spacing:1.3px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.entry-row{ font-size:16px; margin-bottom:5px; }
+.entry-row b{ font-weight:600; }
+.entry-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.tag{
+  font-size:12px; letter-spacing:.6px; padding:4px 11px;
+  border-radius:var(--radius-pill); background:rgba(124,139,104,.18); color:#5D6B4C;
+}
+.entry-delete{
+  background:none; border:none; padding:6px 0; margin-top:8px;
+  color:var(--muted); font-size:13px; text-decoration:underline; text-underline-offset:3px;
+}
+
+.script{
+  width:100%; text-align:left;
+  background:var(--sand); border:1.5px solid var(--sand-line); border-radius:14px;
+  padding:16px 18px; margin-bottom:10px;
+  font-size:17px; line-height:1.45; color:var(--ink);
+  transition:background .15s ease;
+}
+.script:active{ background:#EFE3D2; }
+.script small{ display:block; margin-top:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); }
+
+.empty{ text-align:center; padding:44px 20px; color:var(--muted); }
+
+.note{
+  min-height:24px; text-align:center;
+  font-size:15px; color:var(--sage);
+  opacity:0; transition:opacity .25s ease;
+}
+.note.show{ opacity:1; }
+
+.head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.head .link{ padding:10px 6px 10px 0; text-decoration:none; font-size:22px; line-height:1; }
+
+.divider{ height:1px; background:var(--sand-line); margin:24px 0; border:0; }
+
+/* ==========================================================================
+   11. LEGAL SCREENS — Terms and Privacy
+   Smaller, denser type. Readable, but visually quieter than the app itself.
+   ========================================================================== */
+.legal{ font-size:15.5px; line-height:1.62; color:var(--muted); }
+.legal h3{ font-size:16.5px; color:var(--ink); font-weight:700; margin:28px 0 9px; }
+.legal h4{ font-size:15.5px; color:var(--ink); font-weight:600; margin:18px 0 6px; }
+.legal p{ margin:0 0 13px; }
+.legal ul{ margin:0 0 13px; padding-left:19px; }
+.legal li{ margin-bottom:7px; }
+.legal strong{ color:var(--ink); font-weight:600; }
+.legal a{ color:var(--clay); }
+.legal .updated{
+  font-size:12px; letter-spacing:1.3px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:22px;
+}
+/* Pull-out box for the clauses people must not miss */
+.legal .callout{
+  background:var(--sand);
+  border:1.5px solid var(--sand-line);
+  border-left:4px solid var(--clay);
+  border-radius:14px;
+  padding:15px 17px; margin:0 0 18px;
+  color:var(--ink);
+}
+.legal .callout p:last-child{ margin-bottom:0; }
+.legal table{ width:100%; border-collapse:collapse; margin:0 0 14px; font-size:14.5px; }
+.legal td{ padding:9px 10px 9px 0; border-bottom:1px solid var(--sand-line); vertical-align:top; }
+.legal td:first-child{ color:var(--ink); font-weight:600; width:44%; }
+
+/* ==========================================================================
+   12. LARGER SCREENS — same single column, more air
+   ========================================================================== */
+@media (min-width:600px){
+  body{ font-size:18px; }
+  .app{ padding:44px 30px 40px; }
+  .wordmark{ font-size:46px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- =======================================================================
+     WELCOME — shown once, on first open only.
+     This is where the user acknowledges the safety disclaimer.
+     To remove it entirely, delete this section and the showFirstScreen()
+     call at the very bottom of the script, then call show('home') instead.
+     ======================================================================= -->
+<section id="welcome" class="screen" aria-labelledby="welcomeTitle">
+  <div class="home-top" style="padding-bottom:20px;">
+    <h1 id="welcomeTitle" class="wordmark">Pause<strong>Halt</strong></h1>
+    <p class="tagline">Pause &middot; Notice &middot; Heal</p>
+  </div>
+
+  <div class="card" style="margin-bottom:18px;">
+    <p style="margin-bottom:12px;"><strong>Before you start, two things.</strong></p>
+    <p class="sub" style="margin-bottom:12px;">This app is a self-help tool, not therapy, counselling or medical care. It can't assess your situation, and it isn't a substitute for a professional.</p>
+    <p class="sub" style="margin:0;">It is also not an emergency service. Nobody reads what you write and nothing is sent anywhere. If you're in danger or thinking of harming yourself, contact your local emergency service or a crisis line.</p>
+  </div>
+
+  <p class="tiny" style="margin-bottom:18px;">What you type stays in this browser, on this device. We never see it.</p>
+
+  <div class="stack">
+    <button class="btn" onclick="acceptTerms()">I understand &mdash; continue</button>
+  </div>
+
+  <div class="foot">
+    <div class="foot-links">
+      <button class="link" onclick="openLegal('terms','welcome')">Terms</button>
+      <span class="foot-sep">&middot;</span>
+      <button class="link" onclick="openLegal('privacy','welcome')">Privacy</button>
+    </div>
+    <p class="tiny foot-note">Continuing means you accept the Terms and Privacy Policy.</p>
+  </div>
+</section>
+
+<!-- =======================================================================
+     HOME
+     ======================================================================= -->
+<section id="home" class="screen" aria-labelledby="homeTitle">
+  <div class="home-top">
+    <h1 id="homeTitle" class="wordmark">Pause<strong>Halt</strong></h1>
+    <p class="tagline">Pause &middot; Notice &middot; Heal</p>
+    <p class="sub" style="margin-top:22px; max-width:34ch;">
+      When someone says the thing that lands hard, come here first. Two minutes, then you choose your response.
+    </p>
+  </div>
+
+  <div class="home-actions">
+    <button class="btn" onclick="startCalm()">Calm now</button>
+    <button class="btn btn--sage" onclick="openWeek()">My week</button>
+    <button class="btn btn--quiet" onclick="show('scripts','home')">Boundary scripts</button>
+  </div>
+
+  <!-- Footer: legal and support live here, out of the way of the flow -->
+  <footer class="foot">
+    <div class="foot-links">
+      <button class="link" onclick="openLegal('terms','home')">Terms</button>
+      <span class="foot-sep">&middot;</span>
+      <button class="link" onclick="openLegal('privacy','home')">Privacy</button>
+      <span class="foot-sep">&middot;</span>
+      <button class="link" onclick="show('support','home')">Support</button>
+    </div>
+    <p class="tiny foot-note">
+      &copy; [YEAR] PauseHalt &middot; pausehalt.com<br>
+      Companion to <em>Is Your Family Hurting You?</em>
+    </p>
+  </footer>
+</section>
+
+<!-- =======================================================================
+     CALM FLOW — STEP 1: STOP
+     ======================================================================= -->
+<section id="stop" class="screen" aria-labelledby="stopTitle">
+  <div class="ribbon" data-ribbon></div>
+  <div class="center">
+    <h2 id="stopTitle" class="step-word">Stop</h2>
+    <p class="lead" style="max-width:20ch;">Freeze. Don't react yet.</p>
+    <p class="sub" style="max-width:26ch;">Nothing has to be answered in this next minute.</p>
+  </div>
+  <div class="stack">
+    <button class="btn" onclick="nextStep()">Next</button>
+    <button class="link" onclick="leaveFlow()">Back to home</button>
+  </div>
+</section>
+
+<!-- =======================================================================
+     CALM FLOW — STEP 2: BREATHE
+     ======================================================================= -->
+<section id="breathe" class="screen" aria-labelledby="breatheTitle">
+  <div class="ribbon" data-ribbon></div>
+  <div class="center">
+    <h2 id="breatheTitle" class="step-word">Breathe</h2>
+    <div class="breath-stage">
+      <div id="breathRing"><span id="breathPhase" aria-live="polite">Inhale</span></div>
+    </div>
+    <p class="breath-count" id="breathCount">Breath 1 of 3</p>
+    <p class="sub">In for four. Hold for four. Out for six.</p>
+  </div>
+  <div class="stack">
+    <button class="btn" onclick="nextStep()">Next</button>
+    <button class="link" onclick="leaveFlow()">Back to home</button>
+  </div>
+</section>
+
+<!-- =======================================================================
+     CALM FLOW — STEP 3: NAME IT
+     ======================================================================= -->
+<section id="nameIt" class="screen" aria-labelledby="nameTitle">
+  <div class="ribbon" data-ribbon></div>
+  <div class="center">
+    <h2 id="nameTitle" class="step-word">Name it</h2>
+    <p class="lead">What are you feeling?</p>
+    <div style="width:100%; max-width:320px;">
+      <label for="emotion" class="tiny" style="text-transform:uppercase; letter-spacing:1.4px;">Closest word</label>
+      <select id="emotion">
+        <option>Anger</option>
+        <option>Fear</option>
+        <option>Shame</option>
+        <option>Panic</option>
+        <option>Numbness</option>
+        <option>Sadness</option>
+        <option>Overwhelm</option>
+      </select>
+    </div>
+    <p class="sub" style="max-width:28ch;">You don't need the perfect word. Naming it turns the volume down.</p>
+  </div>
+  <div class="stack">
+    <button class="btn" onclick="nextStep()">Next</button>
+    <button class="link" onclick="leaveFlow()">Back to home</button>
+  </div>
+</section>
+
+<!-- =======================================================================
+     CALM FLOW — STEP 4: GROUND
+     ======================================================================= -->
+<section id="ground" class="screen" aria-labelledby="groundTitle">
+  <div class="ribbon" data-ribbon></div>
+  <div class="center">
+    <h2 id="groundTitle" class="step-word">Ground</h2>
+    <p class="lead" style="max-width:22ch;">Press your feet into the floor. You are safe.</p>
+    <p class="sub" style="max-width:26ch;">Now name three things you can see in this room.</p>
+  </div>
+  <div class="stack">
+    <button class="btn" onclick="nextStep()">Next</button>
+    <button class="link" onclick="leaveFlow()">Back to home</button>
+  </div>
+</section>
+
+<!-- =======================================================================
+     CALM FLOW — STEP 5: DECIDE
+     ======================================================================= -->
+<section id="decide" class="screen" aria-labelledby="decideTitle">
+  <div class="ribbon" data-ribbon></div>
+  <div class="center">
+    <h2 id="decideTitle" class="step-word">Decide</h2>
+    <p class="lead">Choose your response.</p>
+
+    <div class="choices" role="group" aria-label="Your response">
+      <button class="choice" data-choice="Pause"         aria-pressed="false" onclick="pickChoice(this)">Pause</button>
+      <button class="choice" data-choice="Leave"         aria-pressed="false" onclick="pickChoice(this)">Leave</button>
+      <button class="choice" data-choice="Respond later" aria-pressed="false" onclick="pickChoice(this)">Respond later</button>
+    </div>
+
+    <button class="link" onclick="show('scripts','decide')">See boundary scripts</button>
+  </div>
+
+  <div class="stack">
+    <button class="btn" onclick="openLog()">Log this trigger</button>
+    <button class="link" onclick="leaveFlow()">Back to home</button>
+  </div>
+</section>
+
+<!-- =======================================================================
+     QUICK LOG
+     ======================================================================= -->
+<section id="log" class="screen" aria-labelledby="logTitle">
+  <div class="head">
+    <button class="link" onclick="show('decide')" aria-label="Back">&#8592;</button>
+    <h2 id="logTitle" class="screen-title">Quick log</h2>
+  </div>
+  <p class="sub" style="margin-bottom:22px;">Just collecting what happened. You're not fixing anything yet.</p>
+
+  <form id="triggerForm" novalidate>
+    <div class="field">
+      <label for="happened">What happened?</label>
+      <textarea id="happened" rows="2" placeholder="The comment, the tone, the moment"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="felt">What did I feel?</label>
+      <input type="text" id="felt" placeholder="Anger, shame, wanting to escape">
+    </div>
+
+    <div class="field">
+      <label for="memory">What old memory did it bring up?</label>
+      <textarea id="memory" rows="2" placeholder="Optional — anything this reminded you of"></textarea>
+    </div>
+
+    <button class="btn" type="submit">Save trigger</button>
+  </form>
+
+  <p class="note" id="logMsg" role="status"></p>
+
+  <div class="grow"></div>
+  <button class="btn btn--quiet" onclick="goHome()">Back to home</button>
+</section>
+
+<!-- =======================================================================
+     MY WEEK
+     ======================================================================= -->
+<section id="week" class="screen" aria-labelledby="weekTitle">
+  <div class="head">
+    <button class="link" onclick="goHome()" aria-label="Back">&#8592;</button>
+    <h2 id="weekTitle" class="screen-title">My week</h2>
+  </div>
+
+  <p class="sub" id="weekCount" style="margin-bottom:20px;"></p>
+  <div id="weekList"></div>
+
+  <div class="grow"></div>
+  <div class="stack" style="margin-top:24px;">
+    <button class="btn btn--quiet" id="copyBtn" onclick="copyWeek()">Copy my week as text</button>
+    <button class="btn btn--quiet" onclick="goHome()">Back to home</button>
+  </div>
+  <p class="note" id="weekMsg" role="status"></p>
+</section>
+
+<!-- =======================================================================
+     BOUNDARY SCRIPTS
+     ======================================================================= -->
+<section id="scripts" class="screen" aria-labelledby="scriptsTitle">
+  <div class="head">
+    <button class="link" id="scriptsBack" onclick="goHome()" aria-label="Back">&#8592;</button>
+    <h2 id="scriptsTitle" class="screen-title">Boundary scripts</h2>
+  </div>
+  <p class="sub" style="margin-bottom:20px;">Tap one to copy it. You don't owe anyone an explanation after it.</p>
+
+  <div id="scriptList"></div>
+  <p class="note" id="scriptMsg" role="status"></p>
+
+  <div class="grow"></div>
+  <button class="btn btn--quiet" style="margin-top:20px;" onclick="goHome()">Back to home</button>
+</section>
+
+<!-- =======================================================================
+     SUPPORT
+     ======================================================================= -->
+<section id="support" class="screen" aria-labelledby="supportTitle">
+  <div class="head">
+    <button class="link" onclick="goHome()" aria-label="Back">&#8592;</button>
+    <h2 id="supportTitle" class="screen-title">If it's heavier than this</h2>
+  </div>
+
+  <div class="card">
+    <p>This app is a pause button, not treatment. If the heaviness is staying with you for days, or you're finding it hard to keep going, that's worth telling a real person.</p>
+    <hr class="divider">
+    <p class="sub">A doctor, counsellor, or a trusted friend is a good first call. If you're in immediate distress, contact your local emergency service &mdash; in Botswana, 997 for ambulance or 999 for police. <strong>findahelpline.com</strong> lists free helplines by country.</p>
+  </div>
+
+  <p class="tiny" style="margin-top:20px;">Asking for help is one of the bravest things you can do. You do not have to heal deep family wounds by yourself.</p>
+
+  <div class="grow"></div>
+  <button class="btn btn--quiet" onclick="goHome()">Back to home</button>
+</section>
+
+<!-- =======================================================================
+     TERMS AND CONDITIONS
+     The full text lives here so it works offline. If you edit it, make the
+     same edit to the copy published at pausehalt.com/terms.
+     ======================================================================= -->
+<section id="terms" class="screen" aria-labelledby="termsTitle">
+  <div class="head">
+    <button class="link" id="termsBack" onclick="goHome()" aria-label="Back">&#8592;</button>
+    <h2 id="termsTitle" class="screen-title">Terms and Conditions</h2>
+  </div>
+
+  <div class="legal">
+    <p class="updated">Last updated [DATE]</p>
+
+    <p>These Terms are a legal agreement between you and us about the eBook, the app, and the bonus materials you have bought or been given access to. By buying, downloading, opening or using any part of the bundle, you agree to them. If you do not agree, do not use the materials, and contact us for a refund within the window in section 9.</p>
+
+    <h3>1. Who we are</h3>
+    <p>The materials are published by <strong>[YOUR BUSINESS OR PERSONAL NAME]</strong> of [YOUR ADDRESS], Botswana ("we", "us", "our"). You can reach us at <strong>hello@pausehalt.com</strong>.</p>
+
+    <h3>2. What these Terms cover</h3>
+    <p>Everything in the bundle, which we call the <strong>Materials</strong>:</p>
+    <ul>
+      <li>the eBook <em>Is Your Family Hurting You?</em> (PDF);</li>
+      <li>the PauseHalt app;</li>
+      <li>any bonus workbooks, script packs, audio, checklists or other extras included in the offer;</li>
+      <li>our sales pages and any email we send you in connection with the purchase.</li>
+    </ul>
+    <p>"You" means the individual who purchased or was granted access.</p>
+
+    <h3>3. This is not therapy or medical care</h3>
+
+    <div class="callout">
+      <p><strong>Read this section even if you skip the rest.</strong></p>
+      <p>The Materials are educational self-help resources about family dynamics, boundaries and emotional regulation. We are not providing medical, psychological, psychiatric, therapeutic, counselling, legal or financial advice. Nothing here is a diagnosis, a treatment plan, or a clinical assessment of you or anyone in your life.</p>
+    </div>
+
+    <p>Specifically, you acknowledge and agree that:</p>
+
+    <h4>(a) No professional relationship is created</h4>
+    <p>Using the Materials does not create a therapist–client, counsellor–client, doctor–patient, coach–client or any other professional relationship between you and us.</p>
+
+    <h4>(b) The Materials are not a substitute for professional care</h4>
+    <p>They are not a replacement for therapy, counselling, medical treatment, medication, or the advice of a qualified health professional. If you are in treatment, do not stop, start, delay or change any treatment or medication because of anything you read or do here. Speak to your doctor or therapist first.</p>
+
+    <h4>(c) We do not know your situation</h4>
+    <p>The Materials are written for a general audience. We have no knowledge of your health, history, safety, relationships or circumstances, and cannot assess whether any exercise, script or suggestion is appropriate or safe for you. You are responsible for deciding what to use and what to leave.</p>
+
+    <h4>(d) Results are not guaranteed</h4>
+    <p>Every person and every family is different. We make no promise about the outcome of using the Materials, including any change in how you feel, how you cope, or how anyone else behaves towards you.</p>
+
+    <h4>(e) Emotional material may surface</h4>
+    <p>Working with family history, boundaries and triggers can bring up strong feelings and difficult memories. If that happens and it does not settle, stop and speak to a qualified professional.</p>
+
+    <h4>(f) Setting boundaries carries real-world consequences</h4>
+    <p>The boundary scripts and suggested responses are examples only. You know your family and your safety situation; we do not. Use your own judgement about what is safe to say, to whom, and when.</p>
+
+    <h3>4. This is not an emergency service</h3>
+
+    <div class="callout">
+      <p><strong>The Materials are not a crisis service, a helpline, or a safety-monitoring tool.</strong></p>
+      <p>If you are in immediate danger, or you are thinking about harming yourself or someone else, do not use the app. Contact your local emergency services, go to your nearest emergency department, or call a crisis line. In Botswana, dial 997 for ambulance or 999 for police. A directory of free helplines by country is at findahelpline.com.</p>
+    </div>
+
+    <ul>
+      <li>The app does not contact anyone on your behalf. It does not alert us, a helpline, a family member or emergency services under any circumstances.</li>
+      <li><strong>Nobody reads your entries.</strong> What you type is stored only on your own device and is never sent to us or seen by us. No person or system is monitoring it.</li>
+      <li>The app has no notifications, no check-ins and no automated responses.</li>
+    </ul>
+
+    <p>If you are experiencing abuse, coercion or violence from a family member, please seek help from a domestic violence organisation, a social worker, or the police. Self-help material is not enough for that, and it is not what this bundle is designed for.</p>
+
+    <h3>5. Who may use the Materials</h3>
+    <p>You must be <strong>18 or older</strong> to buy or use the Materials. They are written for adults and deal with adult subject matter, including family conflict and emotional distress. Do not buy or use them on behalf of a person under 18.</p>
+
+    <h3>6. What you may do (your licence)</h3>
+    <p>We grant you a personal, limited, non-exclusive, non-transferable, revocable licence to:</p>
+    <ul>
+      <li>download, read and keep the eBook and bonuses for your <strong>own personal use</strong>;</li>
+      <li>print a copy for your own use;</li>
+      <li>use the app on devices you own or control;</li>
+      <li>quote short passages in a review, a post or a conversation, with credit to the title and author.</li>
+    </ul>
+
+    <h3>7. What you may not do</h3>
+    <p>You may not:</p>
+    <ul>
+      <li>share, forward, email, upload, post or otherwise distribute the eBook, app file, or bonuses to anyone else, including in a WhatsApp group, Facebook group, Telegram channel, Drive folder or file-sharing site;</li>
+      <li>resell, sublicense, rent, lend or give away your copy or your access;</li>
+      <li>reproduce the Materials in whole or in substantial part, in any medium;</li>
+      <li>create derivative works, translations, adaptations, summaries or courses based on the Materials without our written permission;</li>
+      <li>use the Materials commercially — including handing them to clients, patients, students or a group you run — without a separate written licence from us. Contact hello@pausehalt.com; we are usually happy to arrange this;</li>
+      <li>remove or alter any copyright notice, author name or branding;</li>
+      <li>decompile, reverse-engineer or extract source code from the app beyond what is unavoidable when viewing a web page, or use the app's code in your own product;</li>
+      <li>use the Materials for anything unlawful, or in any way that harms, harasses or defames another person.</li>
+    </ul>
+    <p>Sharing a digital product is copyright infringement. We take it seriously and may revoke your access without refund and pursue legal remedies.</p>
+
+    <h3>8. Our intellectual property</h3>
+    <p>All content in the Materials — text, structure, exercises, methods, scripts, names, logos, design and code — is owned by us or our licensors and protected by copyright and other intellectual property laws.</p>
+    <p>&copy; [YEAR] [YOUR BUSINESS OR PERSONAL NAME]. All rights reserved. Nothing in these Terms transfers ownership to you. You are buying access to use the Materials, not the Materials themselves.</p>
+
+    <h3>9. Purchase, delivery and refunds</h3>
+
+    <h4>Price and payment</h4>
+    <p>Prices are shown at checkout in [CURRENCY] and may change at any time before you buy. Payment is handled by <strong>[PAYMENT PROCESSOR]</strong>. We never see or store your full card details. Your bank may add currency conversion or transaction fees outside our control.</p>
+
+    <h4>Delivery</h4>
+    <p>The Materials are delivered digitally, normally within a few minutes of successful payment, by email and/or a download link. Nothing is shipped. If your download has not arrived within 24 hours, check your spam folder, then email hello@pausehalt.com and we will resend it.</p>
+
+    <h4>Access</h4>
+    <p>Download links may expire for security reasons. Please save your files somewhere safe when you receive them. We will re-issue links where we reasonably can, but we do not guarantee permanent hosting or indefinite access.</p>
+
+    <h4>Refunds</h4>
+    <div class="callout">
+      <p>We offer a <strong>[NUMBER]-day refund</strong>. If the bundle is not right for you, email hello@pausehalt.com within [NUMBER] days of purchase with your order number and we will refund you in full. You must stop using the Materials and delete your copies once refunded.</p>
+    </div>
+    <p>Refunds are returned to the original payment method and may take several business days to appear. We may decline refunds where we reasonably believe a request is fraudulent or the process is being abused, including repeat purchase-and-refund patterns.</p>
+    <p><strong>If you are a consumer in the EU or UK:</strong> you normally have a 14-day right to cancel a purchase of digital content. By buying and downloading the Materials immediately, you request immediate delivery and acknowledge that you lose that cancellation right once download begins. Our voluntary refund policy above still applies in addition to your statutory rights.</p>
+
+    <h3>10. Your data stays on your device</h3>
+    <p>The app has no accounts, no login, no server and no cloud sync. Anything you type is stored only in your own browser, on your own device. This means:</p>
+    <ul>
+      <li>we cannot see, recover, restore or delete your entries for you;</li>
+      <li>clearing your browser data, using private mode, uninstalling the browser or switching device will erase or hide your entries permanently;</li>
+      <li>anyone with access to your unlocked device may be able to open the app and read your entries. If your safety depends on your family not seeing what you write, think carefully before typing anything into it — and use your device's lock screen.</li>
+    </ul>
+    <p>We are not responsible for lost entries. Full detail is in our Privacy Policy, which forms part of these Terms.</p>
+
+    <h3>11. Availability and changes</h3>
+    <p>We aim to keep the app working and available, but provide it on an "as is" and "as available" basis. We do not promise it will be uninterrupted, error-free, compatible with every device or browser, or available forever. We may update, change, suspend or discontinue it or any feature at any time; where we discontinue it we will try to give reasonable notice so you can save anything you want to keep. Because the app runs in your browser, its behaviour depends on your device, operating system, browser and settings, all outside our control.</p>
+
+    <h3>12. Third-party links and services</h3>
+    <p>The Materials may link to third-party websites, helplines, books, tools or services. We include them because we think they may be useful. We do not control them, do not endorse everything they contain, and are not responsible for their content, availability, accuracy, pricing, practices or privacy policies. Your dealings with any third party are between you and them.</p>
+
+    <h3>13. Disclaimer of warranties</h3>
+    <p>To the fullest extent permitted by law, the Materials are provided <strong>"as is" and "as available", without warranties of any kind</strong>, express, implied or statutory, including implied warranties of merchantability, fitness for a particular purpose, accuracy, completeness or non-infringement. We do not warrant that the information is complete, current, or applicable to your situation, or that using it will produce any particular result.</p>
+
+    <h3>14. Limitation of liability</h3>
+    <p>To the fullest extent permitted by law:</p>
+    <ul>
+      <li><strong>(a)</strong> We will not be liable for indirect, incidental, special, consequential, exemplary or punitive damages, or for loss of profit, income, data, goodwill, opportunity or anticipated savings, arising out of or connected with the Materials, however caused.</li>
+      <li><strong>(b)</strong> We will not be liable for any decision you make or action you take, or do not take, based on the Materials — including decisions about your relationships, your family, your living arrangements, your health or your treatment.</li>
+      <li><strong>(c)</strong> We will not be liable for emotional distress, relationship breakdown, family conflict, or reaction from any other person arising from your use of the Materials.</li>
+      <li><strong>(d)</strong> Our total aggregate liability for all claims connected with the Materials is limited to the amount you actually paid us for the bundle.</li>
+      <li><strong>(e)</strong> Nothing here excludes or limits our liability for death or personal injury caused by our negligence, for fraud or fraudulent misrepresentation, or for anything else that cannot lawfully be excluded. If you are a consumer, these Terms do not affect your mandatory statutory rights.</li>
+    </ul>
+
+    <h3>15. Indemnity</h3>
+    <p>You agree to indemnify and hold us harmless from any claim, demand, loss, liability or expense (including reasonable legal fees) arising from your breach of these Terms, your misuse of the Materials, your infringement of our intellectual property, or your infringement of any third party's rights.</p>
+
+    <h3>16. Suspension and termination</h3>
+    <p>We may suspend or terminate your licence and access immediately, without refund, if you materially breach these Terms — in particular by sharing, reselling or redistributing the Materials. You may stop using the Materials at any time; on termination your licence ends and you must delete all copies. Sections 3, 4, 7, 8, 13, 14, 15 and 19 survive termination.</p>
+
+    <h3>17. Changes to these Terms</h3>
+    <p>We may update these Terms from time to time — for example if the app changes, or the law changes. The current version is always at pausehalt.com/terms, with the "Last updated" date at the top. Changes apply from the date posted, and if you keep using the Materials after that you accept them. Changes will not apply retroactively to a completed purchase where that would be unfair to you.</p>
+
+    <h3>18. General</h3>
+    <p><strong>Whole agreement.</strong> These Terms and the Privacy Policy are the whole agreement between us about the Materials, replacing any earlier statements, promises or marketing claims.</p>
+    <p><strong>Severability.</strong> If any provision is unenforceable, the rest remains in force and that provision is applied to the maximum extent permitted.</p>
+    <p><strong>No waiver.</strong> If we do not enforce a right straight away, we do not lose it.</p>
+    <p><strong>Assignment.</strong> You may not transfer your rights under these Terms. We may transfer ours to a successor if our business is sold or reorganised, provided your rights are not reduced.</p>
+    <p><strong>Force majeure.</strong> We are not liable for failures caused by events beyond our reasonable control, including outages, hosting failures, power cuts or acts of government.</p>
+
+    <h3>19. Governing law and disputes</h3>
+    <p>These Terms are governed by the laws of the <strong>Republic of Botswana</strong>, and the courts of Botswana have exclusive jurisdiction over any dispute — except that if you are a consumer resident elsewhere, you may also bring proceedings in the courts of your country of residence where its law gives you that right.</p>
+    <p>Before starting any formal proceedings, please contact us at hello@pausehalt.com. Most problems are solved with an email.</p>
+
+    <h3>20. Contact</h3>
+    <p>[YOUR BUSINESS OR PERSONAL NAME]<br>
+    [YOUR ADDRESS], Botswana<br>
+    hello@pausehalt.com<br>
+    pausehalt.com</p>
+    <p>We aim to reply within [NUMBER] business days.</p>
+  </div>
+
+  <div class="stack" style="margin-top:26px;">
+    <button class="btn btn--quiet" onclick="openLegal('privacy', legalOrigin)">Read the Privacy Policy</button>
+    <button class="btn btn--quiet" id="termsDone" onclick="goHome()">Back to home</button>
+    <p class="tiny" style="text-align:center;">Also published at <a href="terms.html" style="color:var(--clay);">pausehalt.com/terms</a></p>
+  </div>
+</section>
+
+<!-- =======================================================================
+     PRIVACY POLICY
+     ======================================================================= -->
+<section id="privacy" class="screen" aria-labelledby="privacyTitle">
+  <div class="head">
+    <button class="link" id="privacyBack" onclick="goHome()" aria-label="Back">&#8592;</button>
+    <h2 id="privacyTitle" class="screen-title">Privacy Policy</h2>
+  </div>
+
+  <div class="legal">
+    <p class="updated">Last updated [DATE]</p>
+
+    <p>This policy explains what personal information we collect when you buy or use <em>Is Your Family Hurting You?</em>, the PauseHalt app, and the bonus materials — and what we do with it. We have written it in plain language on purpose. If anything is unclear, email hello@pausehalt.com and we will explain it.</p>
+
+    <div class="callout">
+      <p><strong>The short version</strong></p>
+      <p>What you type into the app never reaches us. Your entries stay in your own browser, on your own device. There is no account, no server, no cloud sync, and no way for us to see them.</p>
+      <p>We do collect information when you buy — your name, email and order details — because we have to, in order to send you the product. We do not sell your information to anyone, ever. And we do not track you inside the app: no analytics, no advertising pixels, no cookies.</p>
+    </div>
+
+    <h3>1. Who is responsible</h3>
+    <p><strong>[YOUR BUSINESS OR PERSONAL NAME]</strong> of [YOUR ADDRESS], Botswana is the data controller for the information described here. Contact: hello@pausehalt.com.</p>
+
+    <h3>2. What the app stores, and why we cannot see it</h3>
+    <p>PauseHalt runs entirely in your browser. When you save a log entry, the app writes it to <code>localStorage</code> — a small storage area belonging to your browser on your device. Entries can include what you write in these fields:</p>
+    <ul>
+      <li>What happened</li>
+      <li>What you felt</li>
+      <li>What old memory it brought up</li>
+      <li>The emotion you selected and the response you chose</li>
+      <li>The date and time</li>
+    </ul>
+    <p><strong>This information is never transmitted anywhere.</strong> It is not sent to us, to a server, or to any third party. There is no network request involved in saving it. We have no database of user entries, because there is no database at all. Practically:</p>
+    <ul>
+      <li><strong>We cannot read your entries.</strong> Not on request, not by subpoena, not by accident.</li>
+      <li><strong>We cannot recover them for you.</strong> If you clear your browser data, use private mode, switch browser or device, or your device is wiped, the entries are gone permanently. There is no backup.</li>
+      <li><strong>We cannot delete them for you.</strong> You do that yourself — entry by entry in My Week, or by clearing your browser's site data for the app.</li>
+    </ul>
+    <p>Because the entries sit on your device, anyone who can unlock it and open the app can read them. This matters if you share a phone or laptop, or if your safety depends on a family member not seeing what you write. Use a screen lock, and consider what you commit to writing.</p>
+    <p>If you use "Copy my week as text", the content goes to your device's clipboard and then wherever you paste it. Once pasted into an email, note or message, this policy no longer covers that copy — it is governed by the service you pasted it into.</p>
+
+    <h3>3. Information we collect when you buy</h3>
+    <table>
+      <tr><td>Name</td><td>To identify your order and address you correctly</td></tr>
+      <tr><td>Email address</td><td>To deliver download links and order confirmation, and answer support queries</td></tr>
+      <tr><td>Order details</td><td>To fulfil the order, handle refunds and keep tax records</td></tr>
+      <tr><td>Billing country</td><td>Tax and currency handling</td></tr>
+      <tr><td>Partial card details</td><td>Fraud prevention and refunds, held by our payment provider</td></tr>
+      <tr><td>Checkout technical data</td><td>Security and fraud prevention, collected by our payment provider</td></tr>
+    </table>
+    <p><strong>We never see or store your full card number, expiry date or security code.</strong> Payment is processed by [PAYMENT PROCESSOR], who handle card data under their own security standards and privacy policy.</p>
+
+    <h3>4. If you join our email list</h3>
+    <p>If you subscribe, or tick the box at checkout, we store your email address and first name with our email provider, [EMAIL PROVIDER], to send you the resource you asked for and occasional emails about our work. The provider records standard engagement data such as whether an email was opened or a link clicked, so we can tell what is useful and stop sending what is not.</p>
+    <p><strong>You can unsubscribe at any time</strong> using the link at the bottom of every email. Buying the bundle does not require you to stay on the list, and unsubscribing does not affect your access to what you bought.</p>
+
+    <h3>5. Information collected on our website</h3>
+    <p>pausehalt.com is hosted by [HOSTING PLATFORM], which keeps standard server logs (IP address, browser type, pages viewed, referring page) for security and basic traffic counts.</p>
+    <p>[IF YOU USE ANALYTICS, DESCRIBE IT HERE — OTHERWISE DELETE THIS LINE.]</p>
+    <p>The app itself sets no cookies and contains no analytics or advertising code.</p>
+
+    <h3>6. Why we are allowed to process your information</h3>
+    <p>Where the GDPR or similar laws apply, our legal bases are:</p>
+    <ul>
+      <li><strong>Performance of a contract</strong> — collecting your name, email and order details so we can deliver what you paid for.</li>
+      <li><strong>Legal obligation</strong> — keeping transaction and tax records for the period the law requires.</li>
+      <li><strong>Consent</strong> — sending marketing emails. You can withdraw this at any time by unsubscribing.</li>
+      <li><strong>Legitimate interests</strong> — securing our site, preventing fraud, answering support emails, and understanding basic traffic levels, balanced against your privacy.</li>
+    </ul>
+    <p><strong>A note on sensitive information.</strong> What you write in the app is emotionally sensitive and may count as health-related data under some laws. Because it never leaves your device, we do not process it at all, and need no legal basis to do so. This is a deliberate design decision, not an oversight.</p>
+
+    <h3>7. Who we share information with</h3>
+    <p>Only what is necessary, and only with providers who process it on our behalf: [PAYMENT PROCESSOR] for payments and refunds; [EMAIL PROVIDER] for delivering your files and emails; [HOSTING PLATFORM] for hosting the site and files; and our accountant or the tax authority where required.</p>
+    <p>We may also disclose information where legally required, or to establish or defend legal claims. If our business is ever sold, information may pass to the new owner, who must continue to protect it under this policy.</p>
+    <p><strong>We do not sell, rent or trade your personal information. We do not share it with advertisers or data brokers.</strong></p>
+
+    <h3>8. International transfers</h3>
+    <p>We are based in Botswana. Our providers may store and process information in other countries, including the United States and the European Union, whose data protection laws may differ from those where you live. Where information is transferred out of a region with transfer restrictions, we rely on our providers' safeguards — such as standard contractual clauses or an adequacy decision — to keep it protected.</p>
+
+    <h3>9. How long we keep information</h3>
+    <ul>
+      <li><strong>Order records:</strong> as long as required by Botswana tax and accounting law, currently [NUMBER] years.</li>
+      <li><strong>Email list:</strong> until you unsubscribe, or after [NUMBER] months of no engagement, whichever comes first.</li>
+      <li><strong>Support emails:</strong> up to [NUMBER] months after the query is resolved.</li>
+      <li><strong>Your app entries:</strong> for as long as you keep them on your device. We hold none of them.</li>
+    </ul>
+
+    <h3>10. How we protect information</h3>
+    <p>We use providers who maintain recognised security standards, keep access to our accounts limited and protected with strong passwords and two-factor authentication, and keep only what we need. No method of transmission or storage is completely secure, and we cannot guarantee absolute security. The most significant risk to your app entries is physical access to your own device, which is why we recommend a screen lock.</p>
+
+    <h3>11. Your rights</h3>
+    <p>Depending on where you live, you have the right to <strong>access</strong> the personal information we hold about you, <strong>correct</strong> it, <strong>delete</strong> it, <strong>restrict</strong> or <strong>object to</strong> our processing, <strong>receive a portable copy</strong>, <strong>withdraw consent</strong> where we relied on it, and <strong>not be subject to</strong> decisions made solely by automated processing (we make none).</p>
+    <p>To exercise any of these, email hello@pausehalt.com. We will respond within one month, and will not charge you or treat you differently for asking. Remember we cannot action a request about your in-app entries, because we do not hold them — you control those directly on your device.</p>
+    <p><strong>If you are in Botswana:</strong> this policy is written to comply with the Data Protection Act, 2024 (Act No. 18 of 2024). If you believe we have mishandled your information, you may complain to the Information and Data Protection Commission.</p>
+    <p><strong>If you are in the EU or UK:</strong> you may complain to your national data protection authority, or to the UK Information Commissioner's Office.</p>
+    <p><strong>If you are in California:</strong> we do not sell or share personal information as those terms are defined under the CCPA/CPRA, and we will not discriminate against you for exercising your rights.</p>
+
+    <h3>12. Children</h3>
+    <p>The Materials are for adults. We do not knowingly collect personal information from anyone under 18. If you believe a child has provided us with personal information, email hello@pausehalt.com and we will delete it.</p>
+
+    <h3>13. Links to other services</h3>
+    <p>The Materials and our emails link to other websites, helplines and resources. Once you follow a link, this policy no longer applies. Please read the privacy policy of any site you visit.</p>
+
+    <h3>14. Changes to this policy</h3>
+    <p>We may update this policy — for example if we change payment or email providers. The current version is always at pausehalt.com/privacy, with the "Last updated" date at the top. If we make a significant change, we will say so by email or on the page itself.</p>
+
+    <h3>15. Contact</h3>
+    <p>[YOUR BUSINESS OR PERSONAL NAME]<br>
+    [YOUR ADDRESS], Botswana<br>
+    hello@pausehalt.com<br>
+    pausehalt.com</p>
+  </div>
+
+  <div class="stack" style="margin-top:26px;">
+    <button class="btn btn--quiet" onclick="openLegal('terms', legalOrigin)">Read the Terms</button>
+    <button class="btn btn--quiet" onclick="goHome()">Back to home</button>
+    <p class="tiny" style="text-align:center;">Also published at <a href="privacy.html" style="color:var(--clay);">pausehalt.com/privacy</a></p>
+  </div>
+</section>
+
+</div><!-- /.app -->
+
+<script>
+/* ==========================================================================
+   PAUSEHALT — application logic
+   Plain JavaScript, no libraries, no build step. Everything stays on the
+   phone: entries are saved in localStorage and never leave the browser.
+   ========================================================================== */
+
+/* --- Settings you may want to change ------------------------------------ */
+const STORE_KEY     = 'pausehalt.logs.v1';      // where entries are saved
+const ACCEPT_KEY    = 'pausehalt.accepted.v1';  // remembers the welcome screen
+const BREATH_ROUNDS = 3;                        // breaths before auto-advance
+const INHALE = 4000, HOLD = 4000, EXHALE = 6000; // milliseconds, from the book
+
+const SCRIPTS = [
+  { line:"That doesn't work for me right now.",                          use:"Last-minute demands" },
+  { line:"I need to step away from this conversation.",                  use:"It's turning toxic" },
+  { line:"I've made my decision, and I don't need to explain it further.",use:"When you're being pressed" },
+  { line:"I hear you. I'm still going to do what's right for me.",       use:"Guilt trips" },
+  { line:"I'm not willing to discuss this right now.",                   use:"Criticism about your life" },
+  { line:"I need notice before visits. I'm not available right now.",    use:"Unannounced visits" }
+];
+
+/* --- Flow state --------------------------------------------------------- */
+const STEPS  = ['stop','breathe','nameIt','ground','decide'];
+const LABELS = ['Stop','Breathe','Name it','Ground','Decide'];
+let stepIndex = 0;
+
+// What the current calm session has collected so far
+let session = { emotion:'', choice:'' };
+
+// Where the scripts and legal screens should send you back to
+let scriptsOrigin = 'home';
+let legalOrigin   = 'home';
+
+/* --- Screen switching --------------------------------------------------- */
+function show(id, origin){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('is-active'));
+  document.getElementById(id).classList.add('is-active');
+  window.scrollTo(0,0);
+
+  // The breathing animation only runs while its screen is on-screen
+  if (id === 'breathe') startBreathing(); else stopBreathing();
+
+  if (id === 'scripts' && origin) {
+    scriptsOrigin = origin;
+    document.getElementById('scriptsBack').setAttribute('onclick', `show('${origin}')`);
+  }
+}
+
+function goHome(){
+  stepIndex = 0;
+  show('home');
+}
+
+/* --- Terms and Privacy screens -------------------------------------------
+   These can be opened from the home footer or from the welcome screen, so
+   the back button has to know where to return to.
+   ------------------------------------------------------------------------ */
+function openLegal(which, origin){
+  legalOrigin = origin || 'home';
+  const back = `show('${legalOrigin}')`;
+  document.getElementById('termsBack').setAttribute('onclick', back);
+  document.getElementById('privacyBack').setAttribute('onclick', back);
+  document.getElementById('termsDone').setAttribute('onclick', back);
+  show(which);
+}
+
+/* --- Welcome / first run -------------------------------------------------
+   Shown once. Tapping "I understand" records the acknowledgement so it is
+   never shown again on this device.
+   ------------------------------------------------------------------------ */
+function showFirstScreen(){
+  let accepted = false;
+  try { accepted = !!localStorage.getItem(ACCEPT_KEY); } catch (err) { accepted = false; }
+  show(accepted ? 'home' : 'welcome');
+}
+
+function acceptTerms(){
+  try {
+    localStorage.setItem(ACCEPT_KEY, new Date().toISOString());
+  } catch (err) {
+    // Storage blocked (e.g. iOS private browsing) — let her through anyway
+  }
+  show('home');
+}
+
+/* --- The calm-now flow -------------------------------------------------- */
+function startCalm(){
+  stepIndex = 0;
+  session = { emotion:'', choice:'' };
+  clearChoices();
+  drawRibbon();
+  show(STEPS[0]);
+}
+
+function nextStep(){
+  // Remember the emotion as we leave the NAME IT step
+  if (STEPS[stepIndex] === 'nameIt') {
+    session.emotion = document.getElementById('emotion').value;
+  }
+  if (stepIndex < STEPS.length - 1) {
+    stepIndex++;
+    drawRibbon();
+    show(STEPS[stepIndex]);
+  }
+}
+
+function leaveFlow(){
+  stopBreathing();
+  goHome();
+}
+
+// Draws the five-word ribbon at the top of each step
+function drawRibbon(){
+  document.querySelectorAll('[data-ribbon]').forEach(bar => {
+    bar.innerHTML = LABELS.map((label, i) => {
+      const state = i === stepIndex ? 'now' : (i < stepIndex ? 'done' : '');
+      return `<span class="${state}">${label}</span>`;
+    }).join('');
+  });
+}
+
+/* --- DECIDE step choices ------------------------------------------------ */
+function pickChoice(btn){
+  clearChoices();
+  btn.setAttribute('aria-pressed','true');
+  session.choice = btn.dataset.choice;
+}
+function clearChoices(){
+  document.querySelectorAll('.choice').forEach(b => b.setAttribute('aria-pressed','false'));
+}
+
+/* --- Breathing circle ---------------------------------------------------
+   A small loop: grow (inhale) → stay (hold) → shrink (exhale). Each phase
+   sets its own transition duration so the timing matches the words.
+   ------------------------------------------------------------------------ */
+let breathTimer = null;
+let breathNum = 1;
+
+function startBreathing(){
+  stopBreathing();
+  breathNum = 1;
+  runBreath();
+}
+
+function stopBreathing(){
+  clearTimeout(breathTimer);
+  breathTimer = null;
+}
+
+function runBreath(){
+  const ring  = document.getElementById('breathRing');
+  const phase = document.getElementById('breathPhase');
+  const count = document.getElementById('breathCount');
+
+  count.textContent = `Breath ${breathNum} of ${BREATH_ROUNDS}`;
+
+  // Inhale — the ring expands
+  phase.textContent = 'Inhale';
+  ring.style.transitionDuration = INHALE + 'ms';
+  ring.style.transform = 'scale(1.18)';
+
+  breathTimer = setTimeout(() => {
+    // Hold — the ring stays where it is
+    phase.textContent = 'Hold';
+
+    breathTimer = setTimeout(() => {
+      // Exhale — the ring settles back down
+      phase.textContent = 'Exhale';
+      ring.style.transitionDuration = EXHALE + 'ms';
+      ring.style.transform = 'scale(.72)';
+
+      breathTimer = setTimeout(() => {
+        if (breathNum < BREATH_ROUNDS) {
+          breathNum++;
+          runBreath();
+        } else {
+          phase.textContent = 'Done';
+          breathTimer = setTimeout(() => {
+            if (STEPS[stepIndex] === 'breathe') nextStep();
+          }, 1200);
+        }
+      }, EXHALE);
+
+    }, HOLD);
+
+  }, INHALE);
+}
+
+/* --- Quick log ----------------------------------------------------------- */
+function openLog(){
+  // Carry the named emotion across so she isn't retyping it
+  const felt = document.getElementById('felt');
+  if (!felt.value && session.emotion) felt.value = session.emotion;
+  show('log');
+}
+
+document.getElementById('triggerForm').addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const happened = document.getElementById('happened').value.trim();
+  const felt     = document.getElementById('felt').value.trim();
+  const memory   = document.getElementById('memory').value.trim();
+
+  // Nothing typed at all — say so plainly instead of saving an empty entry
+  if (!happened && !felt && !memory) {
+    flash('logMsg', 'Add a line to at least one field, then save.');
+    return;
+  }
+
+  const entry = {
+    id:       Date.now(),
+    date:     stamp(new Date()),      // "2026-08-14 14:30:00"
+    happened: happened,
+    felt:     felt,
+    memory:   memory,
+    emotion:  session.emotion,
+    choice:   session.choice
+  };
+
+  const logs = readLogs();
+  logs.push(entry);
+  writeLogs(logs);
+
+  this.reset();
+  flash('logMsg', 'Logged. Thank you for noticing.');
+});
+
+/* --- My week ------------------------------------------------------------- */
+function openWeek(){
+  renderWeek();
+  show('week');
+}
+
+function renderWeek(){
+  const logs    = readLogs().slice().reverse();  // newest first
+  const list    = document.getElementById('weekList');
+  const count   = document.getElementById('weekCount');
+  const copyBtn = document.getElementById('copyBtn');
+
+  if (!logs.length) {
+    count.textContent = '';
+    copyBtn.style.display = 'none';
+    list.innerHTML = `<div class="empty">
+        <p class="lead">No triggers logged yet.</p>
+        <p class="sub" style="margin-top:8px;">The next time something lands hard, tap Calm now — the log comes at the end.</p>
+      </div>`;
+    return;
+  }
+
+  copyBtn.style.display = '';
+
+  const week = logs.filter(l => Date.now() - l.id < 7 * 864e5).length;
+  count.textContent = `${week} logged in the last 7 days · ${logs.length} in total`;
+
+  list.innerHTML = logs.map(l => {
+    const tags = [l.emotion, l.choice].filter(Boolean)
+      .map(t => `<span class="tag">${esc(t)}</span>`).join('');
+
+    return `<div class="card entry">
+        <p class="entry-date">${esc(pretty(l.date))}</p>
+        ${l.happened ? `<p class="entry-row">${esc(l.happened)}</p>` : ''}
+        ${l.felt     ? `<p class="entry-row sub"><b>Felt:</b> ${esc(l.felt)}</p>` : ''}
+        ${l.memory   ? `<p class="entry-row sub"><b>Brought up:</b> ${esc(l.memory)}</p>` : ''}
+        ${tags ? `<div class="entry-tags">${tags}</div>` : ''}
+        <button class="entry-delete" onclick="removeEntry(${l.id})">Delete this entry</button>
+      </div>`;
+  }).join('');
+}
+
+function removeEntry(id){
+  if (!confirm('Delete this entry? It cannot be brought back.')) return;
+  writeLogs(readLogs().filter(l => l.id !== id));
+  renderWeek();
+}
+
+// Puts the whole log on the clipboard — useful before a therapy session
+function copyWeek(){
+  const logs = readLogs();
+  if (!logs.length) return;
+
+  const text = logs.map(l =>
+    `${pretty(l.date)}\nWhat happened: ${l.happened || '-'}\nWhat I felt: ${l.felt || '-'}\nOld memory: ${l.memory || '-'}\n`
+  ).join('\n');
+
+  copyText(text, 'weekMsg', 'Copied. Paste it wherever you need it.');
+}
+
+/* --- Boundary scripts ---------------------------------------------------- */
+document.getElementById('scriptList').innerHTML = SCRIPTS.map((s, i) =>
+  `<button class="script" onclick="copyScript(${i})">
+     &ldquo;${esc(s.line)}&rdquo;
+     <small>${esc(s.use)}</small>
+   </button>`
+).join('');
+
+function copyScript(i){
+  copyText(SCRIPTS[i].line, 'scriptMsg', 'Copied. It\u2019s yours to use.');
+}
+
+/* --- Storage helpers ----------------------------------------------------- */
+function readLogs(){
+  try {
+    return JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+  } catch (err) {
+    return [];   // corrupted or unreadable storage — start from empty
+  }
+}
+
+function writeLogs(logs){
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(logs));
+  } catch (err) {
+    // Private browsing on iOS can block storage
+    flash('logMsg', 'This browser is blocking saving. Try turning off private browsing.');
+  }
+}
+
+/* --- Small utilities ----------------------------------------------------- */
+
+// "2026-08-14 14:30:00"
+function stamp(d){
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ` +
+         `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+// "Fri 14 Aug, 2:30 pm"
+function pretty(s){
+  const d = new Date(s.replace(' ','T'));
+  if (isNaN(d)) return s;
+  return d.toLocaleString(undefined, {
+    weekday:'short', day:'numeric', month:'short',
+    hour:'numeric', minute:'2-digit'
+  });
+}
+
+// Escapes anything the user typed before putting it back on the page
+function esc(str){
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+
+// Shows a short confirmation message, then fades it out
+function flash(elId, message){
+  const el = document.getElementById(elId);
+  el.textContent = message;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// Clipboard with a fallback for older browsers
+function copyText(text, msgId, message){
+  const done = () => flash(msgId, message);
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+
+  function fallback(){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); }
+    catch (err) { flash(msgId, 'Copying isn\u2019t available here — select the text instead.'); }
+    document.body.removeChild(ta);
+  }
+}
+
+/* --- Offline support -----------------------------------------------------
+   Registers the service worker, which keeps a copy of the app on the device
+   so it opens with no signal. Only runs over https:// or localhost, so it
+   stays silent when you open the file by double-clicking it.
+   -------------------------------------------------------------------------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {
+      // No offline caching available — the app still works normally
+    });
+  });
+}
+
+/* --- Start --------------------------------------------------------------- */
+drawRibbon();
+showFirstScreen();
+</script>
+</body>
+</html>
