@@ -6,7 +6,7 @@
    Without that, returning visitors keep seeing the old cached version.
    ========================================================================== */
 
-const CACHE_NAME = 'pausehalt-v1';
+const CACHE_NAME = 'pausehalt-v2';
 
 const FILES = [
   './',
