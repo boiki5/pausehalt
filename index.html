@@ -93,6 +93,12 @@ h1,h2,h3,h4,p{ margin:0; }
 /* ==========================================================================
    3. TYPE SCALE
    ========================================================================== */
+.mark{
+  width:56px; height:56px;
+  display:block;
+  margin-bottom:14px;
+}
+
 .wordmark{
   font-size:40px;
   font-weight:300;
@@ -355,6 +361,7 @@ select{
   body{ font-size:18px; }
   .app{ padding:44px 30px 40px; }
   .wordmark{ font-size:46px; }
+  .mark{ width:64px; height:64px; }
 }
 </style>
 </head>
@@ -370,6 +377,12 @@ select{
      ======================================================================= -->
 <section id="welcome" class="screen" aria-labelledby="welcomeTitle">
   <div class="home-top" style="padding-bottom:20px;">
+    <svg class="mark" viewBox="0 0 100 100" role="img" aria-label="PauseHalt">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="var(--sage-soft)" stroke-width="2"/>
+      <circle cx="50" cy="50" r="32" fill="var(--clay)"/>
+      <rect x="41.75" y="37" width="5.5" height="26" rx="2.75" fill="var(--cream)"/>
+      <rect x="52.75" y="37" width="5.5" height="26" rx="2.75" fill="var(--cream)"/>
+    </svg>
     <h1 id="welcomeTitle" class="wordmark">Pause<strong>Halt</strong></h1>
     <p class="tagline">Pause &middot; Notice &middot; Heal</p>
   </div>
@@ -401,6 +414,12 @@ select{
      ======================================================================= -->
 <section id="home" class="screen" aria-labelledby="homeTitle">
   <div class="home-top">
+    <svg class="mark" viewBox="0 0 100 100" role="img" aria-label="PauseHalt">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="var(--sage-soft)" stroke-width="2"/>
+      <circle cx="50" cy="50" r="32" fill="var(--clay)"/>
+      <rect x="41.75" y="37" width="5.5" height="26" rx="2.75" fill="var(--cream)"/>
+      <rect x="52.75" y="37" width="5.5" height="26" rx="2.75" fill="var(--cream)"/>
+    </svg>
     <h1 id="homeTitle" class="wordmark">Pause<strong>Halt</strong></h1>
     <p class="tagline">Pause &middot; Notice &middot; Heal</p>
     <p class="sub" style="margin-top:22px; max-width:34ch;">
