@@ -91,7 +91,7 @@ h1{font-size:32px; font-weight:700; letter-spacing:-.4px; margin:0 0 6px}
     <div class="callout">
       <p><strong>The short version</strong></p>
       <p>What you type into the app never reaches us. Your entries stay in your own browser, on your own device. There is no account, no server, no cloud sync, and no way for us to see them.</p>
-      <p>We do collect information when you buy — your name, email and order details — because we have to, in order to send you the product. We do not sell your information to anyone, ever. And we do not track you inside the app: no analytics, no advertising pixels, no cookies.</p>
+      <p>We do collect information when you buy — your name, email and order details — because we have to, in order to send you the product. We do not sell your information to anyone, ever. We count visits using a privacy-first tool that sets no cookies and stores nothing on your device. There are no advertising pixels and no tracking of you across other sites.</p>
     </div>
 
     <h3>1. Who is responsible</h3>
@@ -132,7 +132,8 @@ h1{font-size:32px; font-weight:700; letter-spacing:-.4px; margin:0 0 6px}
 
     <h3>5. Information collected on our website</h3>
     <p>pausehalt.com is hosted by GitHub Pages, which keeps standard server logs (IP address, browser type, pages viewed, referring page) for security and basic traffic counts.</p>
-    <p>The app itself sets no cookies and contains no analytics or advertising code.</p>
+    <p>We use <strong>Cloudflare Web Analytics</strong> to see how many people visit and which pages they read. It sets no cookies and stores nothing on your device — no identifiers in localStorage, sessionStorage or anywhere else. It reports aggregate figures only: page views, referring site, browser type and country. Your IP address is used to work out the country and is not stored. Because nothing is stored on your device and nothing identifies you, this requires no cookie banner.</p>
+    <p>The app sets no cookies and carries no advertising code. Nothing is stored on your device except the log entries you write yourself, described in section 2.</p>
 
     <h3>6. Why we are allowed to process your information</h3>
     <p>Where the GDPR or similar laws apply, our legal bases are:</p>
@@ -145,7 +146,7 @@ h1{font-size:32px; font-weight:700; letter-spacing:-.4px; margin:0 0 6px}
     <p><strong>A note on sensitive information.</strong> What you write in the app is emotionally sensitive and may count as health-related data under some laws. Because it never leaves your device, we do not process it at all, and need no legal basis to do so. This is a deliberate design decision, not an oversight.</p>
 
     <h3>7. Who we share information with</h3>
-    <p>Only what is necessary, and only with providers who process it on our behalf: Gumroad for payments and refunds; Gumroad's built-in email system for delivering your files and emails; GitHub Pages for hosting the site and files; and our accountant or the tax authority where required.</p>
+    <p>Only what is necessary, and only with providers who process it on our behalf: Gumroad for payments and refunds; Gumroad's built-in email system for delivering your files and emails; GitHub Pages for hosting the site and files; Cloudflare for aggregate visit statistics; and our accountant or the tax authority where required.</p>
     <p>We may also disclose information where legally required, or to establish or defend legal claims. If our business is ever sold, information may pass to the new owner, who must continue to protect it under this policy.</p>
     <p><strong>We do not sell, rent or trade your personal information. We do not share it with advertisers or data brokers.</strong></p>
 
@@ -194,5 +195,10 @@ h1{font-size:32px; font-weight:700; letter-spacing:-.4px; margin:0 0 6px}
   </footer>
 
 </div>
+
+<!-- Cloudflare Web Analytics — cookieless, stores nothing on the visitor's device.
+     Replace CF_TOKEN_HERE with the token from your Cloudflare dashboard. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "CF_TOKEN_HERE"}'></script>
 </body>
 </html>
