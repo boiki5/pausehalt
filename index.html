@@ -24,7 +24,21 @@
 -->
 
 <meta name="theme-color" content="#FBF6EE">
-<meta name="description" content="Pause, name what you feel, and choose your response. Companion to 'Is Your Family Hurting You?'">
+<meta name="description" content="A two-minute reset for when family words land hard. Free, no account, works offline. Nothing you write leaves your phone.">
+
+<!-- Open Graph: controls the preview card when the link is shared on
+     WhatsApp, Facebook, iMessage, LinkedIn and elsewhere. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pausehalt.com/">
+<meta property="og:site_name" content="PauseHalt">
+<meta property="og:title" content="PauseHalt — pause before you react">
+<meta property="og:description" content="A two-minute reset for when family words land hard. Free, no account, works offline. Nothing you write leaves your phone.">
+<meta property="og:image" content="https://pausehalt.com/icons/icon-512.png">
+<meta property="og:image:alt" content="The PauseHalt logo: a terracotta circle with a pause symbol.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PauseHalt — pause before you react">
+<meta name="twitter:description" content="A two-minute reset for when family words land hard. Free, no account, works offline.">
+<meta name="twitter:image" content="https://pausehalt.com/icons/icon-512.png">
 
 <!-- Makes the app behave like an app when added to a phone home screen -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -120,6 +134,22 @@ h1,h2,h3,h4,p{ margin:0; }
   font-weight:700;
   letter-spacing:4px;
   text-transform:uppercase;
+}
+
+/* Home-screen positioning lines */
+.pitch{
+  margin-top:22px;
+  font-size:19px;
+  line-height:1.45;
+  color:var(--ink);
+  max-width:24ch;
+}
+.trust{
+  margin-top:12px;
+  font-size:13.5px;
+  line-height:1.6;
+  color:var(--muted);
+  max-width:30ch;
 }
 
 .lead{ font-size:19px; color:var(--ink); }
@@ -422,9 +452,10 @@ select{
     </svg>
     <h1 id="homeTitle" class="wordmark">Pause<strong>Halt</strong></h1>
     <p class="tagline">Pause &middot; Notice &middot; Heal</p>
-    <p class="sub" style="margin-top:22px; max-width:34ch;">
-      When someone says the thing that lands hard, come here first. Two minutes, then you choose your response.
-    </p>
+
+    <!-- Says what the app is, for anyone arriving cold from a share -->
+    <p class="pitch">A two-minute reset for when family words land hard.</p>
+    <p class="trust">Free &middot; No account &middot; Works offline &middot; Nothing you write leaves your phone</p>
   </div>
 
   <div class="home-actions">
@@ -962,7 +993,7 @@ select{
 
 /* --- Settings you may want to change ------------------------------------ */
 // Where the "Get the book" link points. Paste your Gumroad product URL here.
-const BOOK_URL      = 'https://mboiki.gumroad.com/l/wsjnz';
+const BOOK_URL      = 'https://gumroad.com/l/YOUR-PRODUCT';
 
 const STORE_KEY     = 'pausehalt.logs.v1';      // where entries are saved
 const ACCEPT_KEY    = 'pausehalt.accepted.v1';  // remembers the welcome screen
@@ -1357,6 +1388,6 @@ showFirstScreen();
 <!-- Cloudflare Web Analytics — cookieless, stores nothing on the visitor's device.
      Replace CF_TOKEN_HERE with the token from your Cloudflare dashboard. -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon='{"token": "<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a6deb8959a3e4120b8169e3df07eceae"}'></script><!-- End Cloudflare Web Analytics -->"}'></script>
+        data-cf-beacon='{"token": "CF_TOKEN_HERE"}'></script>
 </body>
 </html>
